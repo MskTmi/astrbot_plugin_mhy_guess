@@ -1,0 +1,176 @@
+{
+    "daily_quota": {
+        "description": "每日游戏次数上限（-1 表示无限制）",
+        "type": "int",
+        "default": 10,
+        "hint": "每个用户每天最多可玩次数，设为 -1 则不限制"
+    },
+    "cooldown_duration": {
+        "description": "游戏冷却时间（秒）",
+        "type": "int",
+        "default": 60,
+        "hint": "一局游戏结束后，需要等待多少秒才能开始下一局设为 0 或 -1 表示无冷却"
+    },
+    "round_timeout": {
+        "description": "单局超时时间（秒）",
+        "type": "int",
+        "default": 60,
+        "hint": "每局游戏的最长答题时间，超时自动结束并公布答案"
+    },
+    "repository_settings": {
+        "description": "图片仓库配置",
+        "type": "object",
+        "default": {},
+        "hint": "插件会从该仓库克隆图片数据并存储到本地 data/plugin_data/ 目录",
+        "items": {
+            "repository_url": {
+                "description": "图片仓库地址",
+                "type": "string",
+                "default": "https://github.com/MskTmi/mhy-image-index.git",
+                "hint": "插件启动时自动 clone 此仓库本地持久化目录固定为 data/plugin_data/astrbot_plugin_mhy_guess"
+            },
+            "proxy_method": {
+                "description": "Git 代理方式",
+                "type": "string",
+                "default": "direct",
+                "hint": "默认 direct 直连 GitHub；网络较差时可选择预设代理地址；custom 则使用下方自定义地址",
+                "options": [
+                    "direct",
+                    "https://edgeone.gh-proxy.com",
+                    "https://hk.gh-proxy.com/",
+                    "https://gh-proxy.com/",
+                    "https://gh.lk.cc",
+                    "custom"
+                ]
+            },
+            "proxy_custom_url": {
+                "description": "自定义 Git 代理地址",
+                "type": "string",
+                "default": "",
+                "hint": "仅在「Git 代理方式」为 custom 时生效示例: https://edgeone.gh-proxy.com"
+            }
+        }
+    },
+    "effects": {
+        "description": "图片效果配置",
+        "type": "object",
+        "default": {},
+        "hint": "每种效果可独立开关、调整参数",
+        "items": {
+            "blur": {
+                "description": "高斯模糊效果",
+                "type": "object",
+                "default": {},
+                "items": {
+                    "enabled": {
+                        "description": "是否启用",
+                        "type": "bool",
+                        "default": true,
+                        "hint": "勾选以启用高斯模糊效果"
+                    },
+                    "blur_radius": {
+                        "description": "模糊半径",
+                        "type": "int",
+                        "default": 50,
+                        "hint": "值越大越模糊，建议范围 4-100"
+                    }
+                }
+            },
+            "shuffle_blocks": {
+                "description": "分块打乱效果",
+                "type": "object",
+                "default": {},
+                "items": {
+                    "enabled": {
+                        "description": "是否启用",
+                        "type": "bool",
+                        "default": true,
+                        "hint": "勾选以启用分块打乱效果（将图片切块后随机重排）"
+                    },
+                    "block_size": {
+                        "description": "区块像素大小",
+                        "type": "int",
+                        "default": 50,
+                        "hint": "值越小区块越多越难辨认，建议范围 30-200"
+                    }
+                }
+            },
+            "horizontal_slice": {
+                "description": "横向切割效果",
+                "type": "object",
+                "default": {},
+                "items": {
+                    "enabled": {
+                        "description": "是否启用",
+                        "type": "bool",
+                        "default": true,
+                        "hint": "勾选以启用横向切割效果（横向切条后随机重排）"
+                    },
+                    "slice_count": {
+                        "description": "切割条数",
+                        "type": "int",
+                        "default": 50,
+                        "hint": "将图片切成多少条，越多越难，建议范围 30-80"
+                    }
+                }
+            },
+            "vertical_slice": {
+                "description": "纵向切割效果",
+                "type": "object",
+                "default": {},
+                "items": {
+                    "enabled": {
+                        "description": "是否启用",
+                        "type": "bool",
+                        "default": true,
+                        "hint": "勾选以启用纵向切割效果（纵向切条后随机重排）"
+                    },
+                    "slice_count": {
+                        "description": "切割条数",
+                        "type": "int",
+                        "default": 70,
+                        "hint": "将图片切成多少条，越多越难，建议范围 30-80"
+                    }
+                }
+            },
+            "crop_area": {
+                "description": "随机截取效果",
+                "type": "object",
+                "default": {},
+                "items": {
+                    "enabled": {
+                        "description": "是否启用",
+                        "type": "bool",
+                        "default": true,
+                        "hint": "勾选以启用随机截取效果（截取图片的一部分区域）"
+                    },
+                    "crop_ratio": {
+                        "description": "截取比例",
+                        "type": "float",
+                        "default": 0.15,
+                        "hint": "截取区域占原图的比例，值越小越难，建议范围 0.05-0.8"
+                    }
+                }
+            },
+            "pixelate": {
+                "description": "像素化效果",
+                "type": "object",
+                "default": {},
+                "items": {
+                    "enabled": {
+                        "description": "是否启用",
+                        "type": "bool",
+                        "default": true,
+                        "hint": "勾选以启用像素化效果（马赛克风格）"
+                    },
+                    "pixel_size": {
+                        "description": "像素块大小",
+                        "type": "int",
+                        "default": 24,
+                        "hint": "值越大马赛克越粗，建议范围 8-60"
+                    }
+                }
+            }
+        }
+    }
+}
