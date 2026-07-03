@@ -427,6 +427,9 @@ class MhyGuessPlugin(Star):
         if not self._coordinator.has_any_active_room():
             return
 
+        # 命中活跃游戏：阻止默认 LLM 调用，避免 @机器人 时答案消息被 LLM 接管
+        event.should_call_llm(True)
+
         # 获取消息文本
         message_text = self._get_message_text(event)
         if not message_text:
@@ -448,7 +451,18 @@ class MhyGuessPlugin(Star):
             return
 
         if result is not None:
-            yield event.plain_result(result)
+            text, image_path = result
+            # 答对后发送文字 + 原图
+            try:
+                yield event.chain_result(
+                    [Plain(text + "\n"), Image.fromFileSystem(image_path)]
+                )
+            except Exception:
+                _log.exception(
+                    "[%s] 发送答对原图失败: image_path=%s", PLUGIN_NAME, image_path
+                )
+                # 原图发送失败时至少把文字发出去
+                yield event.plain_result(text)
 
     # ── 事件信息提取 ──────────────────────────
 

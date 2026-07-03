@@ -165,12 +165,12 @@ class GameCoordinator:
         user_input: str,
         answerer_id: str,
         answerer_name: str,
-    ) -> Optional[str]:
+    ) -> Optional[tuple[str, str]]:
         """
         提交答案
 
         Returns:
-            结果消息文本（答对时），或 None（无活跃房间 / 答案错误）
+            (结果消息文本, 原图路径)（答对时），或 None（无活跃房间 / 答案错误）
         """
         room = self._rooms.get(conversation_id)
         if room is None:
@@ -190,6 +190,8 @@ class GameCoordinator:
 
         # 答对！结束房间
         display_text = " / ".join(room.expected_display_names)
+        # 在清理房间前取出原图路径，用于答对后发送
+        original_image_path = room.image_path
         try:
             room.finish()
         except Exception:
@@ -214,7 +216,7 @@ class GameCoordinator:
             room.expected_entity_ids,
         )
 
-        return f"回答正确！答案是：{display_text}"
+        return f"回答正确！答案是：{display_text}", original_image_path
 
     # ── 查询 ──────────────────────────────────
 

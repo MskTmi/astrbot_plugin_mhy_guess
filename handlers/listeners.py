@@ -18,12 +18,12 @@ async def handle_answer(
     message_text: str,
     answerer_id: str,
     answerer_name: str,
-) -> Optional[str]:
+) -> Optional[tuple[str, str]]:
     """
     处理可能的答案消息
 
     Returns:
-        结果消息文本（答对时），或 None（无活跃房间 / 答案错误 / 非文本消息）
+        (结果消息文本, 原图路径)（答对时），或 None（无活跃房间 / 答案错误 / 非文本消息）
     """
     # 跳过空消息
     if not message_text or not message_text.strip():
