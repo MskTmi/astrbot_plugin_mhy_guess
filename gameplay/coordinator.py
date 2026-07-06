@@ -249,7 +249,6 @@ class GameCoordinator:
 
             # 超时
             answer_text = " / ".join(room.expected_display_names)
-            answer_id_text = " / ".join(room.expected_entity_ids)
             room.time_out()
 
             # 应用冷却
@@ -264,9 +263,8 @@ class GameCoordinator:
                 room.expected_entity_ids,
             )
 
-            # 触发超时回调（发送超时消息）
-            full_answer = f"{answer_text}（{answer_id_text}）"
-            await self._on_timeout(conversation_id, full_answer)
+            # 触发超时回调（发送超时消息，只回复显示名称）
+            await self._on_timeout(conversation_id, answer_text)
 
         except asyncio.CancelledError:
             # 房间提前结束（答对），超时任务被取消
