@@ -166,8 +166,10 @@ class MhyGuessPlugin(Star):
 
     # ── 超时回调 ──────────────────────────────
 
-    async def _handle_timeout(self, conversation_id: str, answer_text: str) -> None:
-        """超时回调：向会话发送超时提示消息（含正确答案）"""
+    async def _handle_timeout(
+        self, conversation_id: str, answer_text: str, image_path: str
+    ) -> None:
+        """超时回调：向会话发送超时提示消息（含正确答案 + 原图）"""
         try:
             # MessageChain 在 astrbot.api.event 重导出（来自
             # astrbot.core.message.message_event_result），不要从
@@ -175,6 +177,14 @@ class MhyGuessPlugin(Star):
             from astrbot.api.event import MessageChain
 
             chain = MessageChain().message(f"时间到！正确答案是：{answer_text}")
+            try:
+                chain.file_image(image_path)
+            except Exception:
+                _log.exception(
+                    "[%s] 超时附加原图失败: image_path=%s",
+                    PLUGIN_NAME,
+                    image_path,
+                )
             ok = await self._ctx.send_message(conversation_id, chain)
             if not ok:
                 _log.warning(

@@ -31,8 +31,8 @@ from .room import GameError, Room
 
 logger = logging.getLogger("astrbot_plugin_mhy_guess.coordinator")
 
-# 超时回调签名：(conversation_id, answer_display_text) -> None
-TimeoutCallback = Callable[[str, str], Awaitable[None]]
+# 超时回调签名：(conversation_id, answer_display_text, image_path) -> None
+TimeoutCallback = Callable[[str, str, str], Awaitable[None]]
 
 
 class GameCoordinator:
@@ -249,6 +249,7 @@ class GameCoordinator:
 
             # 超时
             answer_text = " / ".join(room.expected_display_names)
+            image_path = room.image_path
             room.time_out()
 
             # 应用冷却
@@ -263,8 +264,8 @@ class GameCoordinator:
                 room.expected_entity_ids,
             )
 
-            # 触发超时回调（发送超时消息，只回复显示名称）
-            await self._on_timeout(conversation_id, answer_text)
+            # 触发超时回调（发送超时消息 + 原图）
+            await self._on_timeout(conversation_id, answer_text, image_path)
 
         except asyncio.CancelledError:
             # 房间提前结束（答对），超时任务被取消
