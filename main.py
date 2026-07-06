@@ -114,6 +114,7 @@ class MhyGuessPlugin(Star):
         image_repo = ImageRepository(
             repo_path=repo_path,
             repo_url=self._settings.repo_settings.effective_url,
+            recent_image_avoid_count=self._settings.recent_image_avoid_count,
         )
         await image_repo.initialize()
 

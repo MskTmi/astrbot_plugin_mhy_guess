@@ -17,6 +17,12 @@
         "default": 60,
         "hint": "每局游戏的最长答题时间，超时自动结束并公布答案"
     },
+    "recent_image_avoid_count": {
+        "description": "最近图片排除数量",
+        "type": "int",
+        "default": 20,
+        "hint": "最近 N 张出现过的图片不会被再次抽中，设为 0 表示不排除，建议范围 20-60"
+    },
     "repository_settings": {
         "description": "图片仓库配置",
         "type": "object",

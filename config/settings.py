@@ -59,6 +59,7 @@ class PluginSettings:
     daily_quota: int = 10
     cooldown_duration: int = 60
     round_timeout: int = 60
+    recent_image_avoid_count: int = 5
     repo_settings: RepositorySettings = field(default_factory=RepositorySettings)
     effects: dict[str, EffectConfig] = field(default_factory=dict)
 
@@ -84,6 +85,7 @@ def build_settings(raw_config: dict[str, Any] | None) -> PluginSettings:
     daily_quota = _safe_int(raw_config.get("daily_quota"), 10)
     cooldown_duration = _safe_int(raw_config.get("cooldown_duration"), 60)
     round_timeout = _safe_int(raw_config.get("round_timeout"), 60)
+    recent_image_avoid_count = _safe_int(raw_config.get("recent_image_avoid_count"), 5)
 
     # 仓库配置：兼容旧的 image_repo_url，优先用 repository_settings
     raw_repo = raw_config.get("repository_settings")
@@ -131,6 +133,7 @@ def build_settings(raw_config: dict[str, Any] | None) -> PluginSettings:
         daily_quota=daily_quota,
         cooldown_duration=cooldown_duration,
         round_timeout=round_timeout,
+        recent_image_avoid_count=recent_image_avoid_count,
         repo_settings=repo_settings,
         effects=effects,
     )

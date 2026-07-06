@@ -6,9 +6,9 @@
   - 精确别名匹配（草履虫 → Kiana）
   - 大小写不敏感
   - 前后空格忽略
-  - 多角色组合匹配（一张图含多个角色时，任一顺序、任意分隔、
+  - 多角色组合匹配（一张图含多个角色时，任一顺序、任意分隔（空格/逗号）、
     任意角色的别名拼接都算正确，例如 “琪亚娜芽衣” / “芽衣琪亚娜”
-    / “芽衣草履虫” / “琪亚娜 芽衣”）
+    / “芽衣草履虫” / “琪亚娜 芽衣” / “琪亚娜,芽衣”）
 """
 
 from __future__ import annotations
@@ -113,14 +113,17 @@ def check_answer(
       1. 将用户输入归一化
       2. 单角色命中：alias_map 查到 resolved_id ∈ expected，或直接等于
          canonical id / display_name
-      3. 多角色组合：把输入按空白切分为若干片段，每个片段再用表层形式
+      3. 多角色组合：把输入按空白或逗号切分为若干片段，每个片段再用表层形式
          完全切分；只要所有片段都能被切分成 expected 角色的表层形式，
          即视为正确（覆盖 “琪亚娜芽衣” / “芽衣琪亚娜” / “芽衣草履虫”
-         / “琪亚娜 芽衣” 这类任意顺序、任意分隔、别名混用的情况）
+         / “琪亚娜 芽衣” / “琪亚娜,芽衣” 这类任意顺序、任意分隔、别名混用的情况）
     """
     normalized = normalize_answer(user_input)
     if not normalized:
         return False
+
+    # 把半角/全角逗号替换为空格，支持 "琪亚娜,芽衣" / "琪亚娜，芽衣" 等写法
+    normalized = normalized.replace(",", " ").replace("，", " ")
 
     # 单角色命中
     resolved_id = alias_map.get(normalized)

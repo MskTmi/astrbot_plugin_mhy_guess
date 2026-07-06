@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import asyncio
+import collections
 import json
 import logging
 import random
@@ -33,9 +34,15 @@ class ImageRepository:
         self,
         repo_path: Path,
         repo_url: str,
+        recent_image_avoid_count: int = 5,
     ) -> None:
         self._repo_path: Path = repo_path
         self._repo_url: str = repo_url
+        self._recent_avoid_count: int = max(recent_image_avoid_count, 0)
+
+        # 最近使用的图片 ID 队列（跨会话全局去重）
+        maxlen = max(self._recent_avoid_count, 1)
+        self._recently_used: collections.deque[str] = collections.deque(maxlen=maxlen)
 
         # 索引缓存
         self._image_index: dict = {}
@@ -254,10 +261,15 @@ class ImageRepository:
         随机抽取一道题目
 
         策略：
-          1. 从有图片的角色中随机选一个
-          2. 从该角色的图片列表中随机选一张
+          1. 从有图片的角色中随机选一个（优先排除最近出现过的图片）
+          2. 从该角色的图片列表中随机选一张（优先选未在最近窗口内的）
           3. 返回 (entity_ids, display_names, game_names, image_absolute_path)
              一张图可能包含多个角色，猜对任意一个即为正确
+
+        伪随机：
+          已抽取的 image_id 会被推入固定长度的最近队列，
+          下次抽取时优先跳过队列中的图片。队列满时最旧的自动出队。
+          当所有候选图片都在最近队列中时，自动回退到全量随机。
 
         Returns:
             (entity_ids, display_names, game_names, image_path) 或 None（无数据时）
@@ -265,11 +277,33 @@ class ImageRepository:
         if not self._entities_with_images:
             return None
 
-        # 随机选角色
-        entity_id, image_ids = random.choice(self._entities_with_images)
+        # 构建最近集合（仅当 avoid_count > 0 时生效）
+        recent_set: set[str] = set()
+        if self._recent_avoid_count > 0:
+            recent_set = set(self._recently_used)
 
-        # 随机选图片
-        image_id = random.choice(image_ids)
+        # 优先选择有"新鲜"图片的角色
+        candidate_entities = self._entities_with_images
+        if recent_set:
+            fresh_entities = [
+                (eid, iids)
+                for eid, iids in self._entities_with_images
+                if any(iid not in recent_set for iid in iids)
+            ]
+            if fresh_entities:
+                candidate_entities = fresh_entities
+            # else: 所有图片都在最近窗口内，回退到全量
+
+        # 随机选角色
+        entity_id, image_ids = random.choice(candidate_entities)
+
+        # 从该角色的图片中优先选新鲜的
+        fresh_ids = [iid for iid in image_ids if iid not in recent_set]
+        image_id = random.choice(fresh_ids if fresh_ids else image_ids)
+
+        # 记录到最近队列
+        if self._recent_avoid_count > 0:
+            self._recently_used.append(image_id)
 
         # 获取图片路径
         assets = self._image_index.get("assets", {})
