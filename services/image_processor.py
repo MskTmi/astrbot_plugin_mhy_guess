@@ -46,7 +46,7 @@ class EffectRegistry:
 
     EFFECT_DEFS: list[tuple[str, str, dict]] = [
         ("blur", "高斯模糊", {"blur_radius": 50}),
-        ("shuffle_blocks", "分块打乱", {"block_size": 50}),
+        ("shuffle_blocks", "分块打乱", {"block_size": "50,60,80"}),
         ("horizontal_slice", "横向切割", {"slice_count": 50}),
         ("vertical_slice", "纵向切割", {"slice_count": 70}),
         ("crop_area", "截取区域", {"crop_ratio": 0.15}),
@@ -95,14 +95,57 @@ class Effects:
     """图片效果算法集合所有方法均为纯函数，不依赖外部状态"""
 
     @staticmethod
+    def _resolve_int_pool(value, default: int) -> int:
+        """
+        将配置值解析为生效的 int：
+
+        - int            ：原样返回（须 > 0，否则回退 default）
+        - str            ：按逗号分隔解析为 int 候选池，随机选取一个
+        - list/tuple     ：每个元素按上述规则递归解析后随机选取
+        - 其它/解析失败  ：回退 default
+
+        用于支持「单个数值」与「多个数值随机选取」两种配置形式。
+        """
+        if isinstance(value, bool):
+            # bool 是 int 的子类，排除以免把 True/False 当成 1/0
+            return default
+        if isinstance(value, int):
+            return value if value > 0 else default
+        if isinstance(value, (list, tuple)):
+            pool = [Effects._resolve_int_pool(v, default) for v in value]
+            pool = [v for v in pool if v > 0]
+            return random.choice(pool) if pool else default
+        if isinstance(value, str):
+            pool: list[int] = []
+            for part in value.split(","):
+                part = part.strip()
+                if not part:
+                    continue
+                try:
+                    n = int(float(part))
+                except ValueError:
+                    continue
+                if n > 0:
+                    pool.append(n)
+            return random.choice(pool) if pool else default
+        return default
+
+    @staticmethod
     def blur(img, blur_radius: int = 8):
         from PIL import ImageFilter
 
         return img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
 
     @staticmethod
-    def shuffle_blocks(img, block_size: int = 50):
-        """分块打乱：将图片切为网格块，随机重排粘贴，确保无空白"""
+    def shuffle_blocks(img, block_size=50):
+        """
+        分块打乱：将图片切为网格块，随机重排粘贴，确保无空白
+
+        block_size 可为单个 int，或逗号分隔的多个数值（字符串/列表）。
+        多个数值时，每次应用从其中随机选取一个，从而支持难度区间随机。
+        解析失败或结果为空时回退到默认 50。
+        """
+        block_size = Effects._resolve_int_pool(block_size, default=50)
         w, h = img.size
         from PIL import Image
 
