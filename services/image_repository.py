@@ -188,7 +188,7 @@ class ImageRepository:
         """从 dist/ 目录加载三个聚合索引 JSON"""
         dist_dir = self._repo_path / "dist"
 
-        # 1. image-index.json — 图片主索引（含 assets, games, entities 倒排）
+        # 1. image-index.json — 图片主索引（含 assets, sources, entities 倒排）
         self._image_index = self._load_json(
             dist_dir / "image-index.json", "image-index.json"
         )
@@ -244,7 +244,7 @@ class ImageRepository:
 
     @property
     def entity_index(self) -> dict[str, dict]:
-        """角色词典：canonical_id → {display_name, games, aliases}"""
+        """角色词典：canonical_id → {display_name, sources, aliases}"""
         return self._entity_index
 
     @property
@@ -332,7 +332,7 @@ class ImageRepository:
             display_names.append(entity_data.get("display_name", eid))
 
         # 收集游戏名
-        game_ids = asset.get("games", [])
+        game_ids = asset.get("sources", [])
         game_names: list[str] = game_ids if isinstance(game_ids, list) else []
 
         return (entity_ids, display_names, game_names, str(image_path))

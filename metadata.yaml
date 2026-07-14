@@ -1,6 +1,6 @@
 name: astrbot_plugin_mhy_guess
 display_name: 米家(mhy)猜角色
 desc: 看图猜角色小游戏插件，支持自定义图片库、多群并发、冷却、每日次数限制
-version: v0.1.1
+version: v0.1.2
 author: MskTmi
 repo: https://github.com/MskTmi/astrbot_plugin_mhy_guess
